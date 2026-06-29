@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рыжик VPN — Админ-панель</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b0c10; }
+        
+        .bg-grid {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .glass-card {
+            background: rgba(30, 35, 45, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover { border-color: rgba(255, 255, 255, 0.15); }
+
+        .btn-danger {
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            color: #fca5a5;
+        }
+        .btn-danger:hover { background: rgba(220, 38, 38, 0.25); }
+
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        #auth-overlay { transition: opacity 0.3s ease; }
+        .hidden-auth { opacity: 0; pointer-events: none; }
+    </style>
+</head>
+<body class="bg-[#0b0c10] text-gray-200 antialiased bg-grid min-h-screen pb-20" id="app-body">
+
+    <!-- МОДАЛЬНОЕ ОКНО ВХОДА ПО ПАРОЛЮ -->
+    <div id="auth-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden-auth transition-opacity">
+        <div class="bg-[#151a22] border border-white/10 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg shadow-orange-500/20">
+                🔐
+            </div>
+            <h2 class="text-xl font-bold text-white mb-1">Доступ к панели</h2>
+            <p class="text-xs text-gray-500 mb-6">Введите пароль для просмотра статистики</p>
+            
+            <input type="password" id="password-input" placeholder="••••••••" class="w-full bg-[#1e232b] border border-white/10 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:border-orange-500/50 transition-colors mb-4" onkeydown="if(event.key === 'Enter') checkPassword()">
+            
+            <button onclick="checkPassword()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-brand-500/10">
+                Войти в панель
+            </button>
+            <p class="text-[10px] text-gray-600 mt-4">Пароль по умолчанию: admin123</p>
+        </div>
+    </div>
+
+    <!-- ШАПКА АДМИНКИ -->
+    <header class="border-b border-white/5 bg-[#0b0c10]/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🐱</span>
+                <span class="font-bold text-lg tracking-tight text-gray-100">Рыжик VPN <span class="text-[10px] text-gray-500 font-normal tracking-widest ml-2">ПАНЕЛЬ</span></span>
+            </div>
+            <button onclick="logout()" class="bg-[#1e232b] hover:bg-[#2a303a] text-gray-300 px-5 py-2 rounded-xl text-sm font-medium transition-colors border border-white/5">
+                Выйти
+            </button>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕЙНЕР -->
+    <main class="max-w-4xl mx-auto px-4 pt-10 space-y-10" id="admin-content">
+        
+        <!-- 1. СТАТИСТИКА КЛИКОВ -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-gray-500">Статистика кликов «Скачать»</h2>
+                <p class="text-sm text-gray-500 mt-1">Считаются переходы со страницы <code class="bg-white/5 px-2 py-0.5 rounded text-[10px] border border-white/5">/sps</code> по типу устройства.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="glass-card p-5 rounded-2xl flex flex-col justify-between min-h-[100px]">
+                    <span class="text-xs text-gray-400">Android</span>
+                    <span class="text-4xl font-bold text-green-400 mt-2" id="stat-android">0</span>
+                </div>
+                <div class="glass-card p-5 rounded-2xl flex flex-col justify-between min-h-[100px]">
+                    <span class="text-xs text-gray-400">iOS (iPhone/iPad)</span>
+                    <span class="text-4xl font-bold text-cyan-400 mt-2" id="stat-ios">0</span>
+                </div>
+                <div class="glass-card p-5 rounded-2xl flex flex-col justify-between min-h-[100px]">
+                    <span class="text-xs text-gray-400">Windows</span>
+                    <span class="text-4xl font-bold text-orange-400 mt-2" id="stat-windows">0</span>
+                </div>
+                <div class="glass-card p-5 rounded-2xl flex flex-col justify-between min-h-[100px]">
+                    <span class="text-xs text-gray-400">MacBook</span>
+                    <span class="text-4xl font-bold text-yellow-400 mt-2" id="stat-mac">0</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-white/5 pb-6">
+                <div>
+                    <p class="text-base font-medium text-gray-200">Всего кликов: <span class="font-bold text-white text-xl" id="total-clicks">0</span></p>
+                    <p class="text-xs text-gray-500 mt-1">Обновлено: <span id="last-updated">-</span></p>
+                </div>
+                <button onclick="resetStats()" class="btn-danger px-6 py-2 rounded-xl text-sm font-medium transition-colors w-full sm:w-auto text-center">
+                    Сбросить статистику
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. АКТИВНЫЙ АРК (С КНОПКОЙ ЗАМЕНЫ) -->
+        <section>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">Активный АРК</h2>
+            <div class="glass-card p-6 rounded-3xl border-l-2 border-l-green-500/50">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></span>
+                    <span class="text-xs font-bold text-green-400 uppercase tracking-wider">Файл для скачивания на Android</span>
+                </div>
+                <h3 id="apk-filename" class="text-xl font-bold text-white mb-1">Kot-vps.apk</h3>
+                <div class="flex items-center gap-4 text-xs text-gray-400 mb-4">
+                    <span id="apk-size">-</span>
+                    <span id="apk-date">-</span>
+                </div>
+                <p class="text-xs text-gray-500 mb-5"><span id="download-count">0</span> скачиваний</p>
+
+                <!-- ЗАМЕНИТЬ АРК (КНОПКА ТУТ) -->
+                <button onclick="document.getElementById('fileInput').click()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-lg shadow-brand-500/20 flex items-center gap-2 w-full sm:w-auto justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Заменить АРК
+                </button>
+                
+                <!-- Скрытый инпут для загрузки файла -->
+                <input type="file" id="fileInput" accept=".apk" class="hidden" onchange="handleFileUpload(this)">
+            </div>
+        </section>
+
+        <!-- 3. ИСТОРИЯ ЗАГРУЗОК АРК -->
+        <section>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">История АРК</h2>
+            <div class="glass-card p-6 rounded-3xl overflow-hidden">
+                <div class="space-y-4" id="history-list">
+                    <!-- История будет заполняться через JS -->
+                    <div class="flex items-center justify-between border-b border-white/5 pb-3 text-sm text-gray-400">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-white font-medium">Kot-vps_v1.0.apk</span>
+                            <span class="text-[10px]">2.39 МБ • 10.06.2026, 10:08</span>
+                        </div>
+                        <span class="text-[10px] bg-white/5 px-2 py-1 rounded border border-white/5">Текущий</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. НАСТРОЙКИ (Смена пароля) -->
+        <section>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">Настройки</h2>
+            <div class="glass-card p-6 rounded-3xl">
+                <div class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="flex-1 w-full">
+                        <label class="text-xs text-gray-400 block mb-2">Новый пароль для входа</label>
+                        <input type="text" id="new-password-input" placeholder="Введите новый пароль" class="w-full bg-[#1e232b] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition-colors">
+                    </div>
+                    <button onclick="changePassword()" class="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/20 font-medium px-6 py-3 rounded-xl text-sm transition-colors w-full sm:w-auto">
+                        Сменить пароль
+                    </button>
+                </div>
+                <p class="text-[10px] text-gray-600 mt-3">Текущий пароль: <span id="current-password-display" class="text-gray-400 font-mono">admin123</span></p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // === НАСТРОЙКИ СЕРВЕРА ===
+        // Когда запустите Render, поменяйте эту ссылку на свой адрес
+        const API_URL = 'http://localhost:3000'; 
+
+        // === ДАННЫЕ ===
+        let adminPassword = 'admin123';
+        let stats = { android: 0, ios: 0, windows: 0, mac: 0 };
+        let totalDownloads = 0;
+        let apkHistory = [
+            { name: 'Kot-vps_v1.0.apk', size: '2.39 МБ', date: '10.06.2026, 10:08', isCurrent: true }
+        ];
+
+        // === АВТОРИЗАЦИЯ ===
+        function checkPassword() {
+            const input = document.getElementById('password-input').value;
+            if(input === adminPassword) {
+                document.getElementById('auth-overlay').classList.add('hidden-auth');
+                loadStatsFromServer(); // Загружаем данные с сервера
+            } else {
+                alert('Неверный пароль!');
+                document.getElementById('password-input').value = '';
+            }
+        }
+
+        function logout() {
+            document.getElementById('auth-overlay').classList.remove('hidden-auth');
+            document.getElementById('password-input').value = '';
+        }
+
+        // === ЗАГРУЗКА СТАТИСТИКИ С СЕРВЕРА ===
+        function loadStatsFromServer() {
+            // Если сервера пока нет, используем локальные данные
+            updateUI();
+        }
+
+        // === СТАТИСТИКА (Локально) ===
+        function resetStats() {
+            if(confirm("Точно сбросить всю статистику кликов?")) {
+                stats = { android: 0, ios: 0, windows: 0, mac: 0 };
+                totalDownloads = 0;
+                updateUI();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('stat-android').textContent = stats.android;
+            document.getElementById('stat-ios').textContent = stats.ios;
+            document.getElementById('stat-windows').textContent = stats.windows;
+            document.getElementById('stat-mac').textContent = stats.mac;
+            
+            const total = stats.android + stats.ios + stats.windows + stats.mac;
+            document.getElementById('total-clicks').textContent = total;
+            
+            const now = new Date();
+            document.getElementById('last-updated').textContent = now.toLocaleDateString('ru-RU') + ', ' + now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+        }
+
+        // === ЗАМЕНА АРК (Работает и локально) ===
+        function handleFileUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const fileName = file.name;
+                const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('ru-RU') + ', ' + now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                
+                // Обновляем активный
+                document.getElementById('apk-filename').textContent = fileName;
+                document.getElementById('apk-size').textContent = sizeInMB + ' МБ';
+                document.getElementById('apk-date').textContent = dateStr;
+                totalDownloads = 0;
+                document.getElementById('download-count').textContent = totalDownloads;
+
+                // Добавляем в историю
+                apkHistory.unshift({
+                    name: fileName,
+                    size: sizeInMB + ' МБ',
+                    date: dateStr,
+                    isCurrent: true
+                });
+                
+                // Обновляем "Текущий" статус у старых версий
+                apkHistory.forEach((item, index) => {
+                    if(index > 0) item.isCurrent = false;
+                });
+
+                renderHistory();
+                alert('АРК файл "' + fileName + '" успешно загружен локально!');
+            }
+        }
+
+        // === ИСТОРИЯ ===
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            
+            apkHistory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between border-b border-white/5 pb-3 text-sm text-gray-400';
+                
+                const leftDiv = document.createElement('div');
+                leftDiv.className = 'flex flex-col gap-1';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'text-white font-medium';
+                nameSpan.textContent = item.name;
+                
+                const metaSpan = document.createElement('span');
+                metaSpan.className = 'text-[10px]';
+                metaSpan.textContent = item.size + ' • ' + item.date;
+                
+                leftDiv.appendChild(nameSpan);
+                leftDiv.appendChild(metaSpan);
+                
+                const rightSpan = document.createElement('span');
+                rightSpan.className = 'text-[10px] bg-white/5 px-2 py-1 rounded border border-white/5';
+                rightSpan.textContent = item.isCurrent ? 'Текущий' : 'Архив';
+                
+                div.appendChild(leftDiv);
+                div.appendChild(rightSpan);
+                list.appendChild(div);
+            });
+        }
+
+        // === СМЕНА ПАРОЛЯ ===
+        function changePassword() {
+            const newPass = document.getElementById('new-password-input').value.trim();
+            if(newPass.length < 4) {
+                alert('Пароль должен быть не короче 4 символов!');
+                return;
+            }
+            adminPassword = newPass;
+            document.getElementById('current-password-display').textContent = newPass;
+            document.getElementById('new-password-input').value = '';
+            alert('Пароль успешно изменен! Новый пароль: ' + newPass);
+        }
+
+        // Запускаем отрисовку истории при загрузке
+        renderHistory();
+        updateUI();
+    </script>
+</body>
+</html>
