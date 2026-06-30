@@ -68,7 +68,8 @@
                 <a href="#pricing" class="hover:text-brand-500 transition-colors">Тарифы</a>
                 <a href="#faq" class="hover:text-brand-500 transition-colors">FAQ</a>
             </nav>
-            <a href="download.php" class="bg-brand-500 hover:bg-brand-600 text-stone-950 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-lg shadow-brand-500/10">
+            <!-- ССЫЛКА НА ПРЯМОЕ СКАЧИВАНИЕ -->
+            <a href="https://kotikapi.onrender.com/Kot-vps.apk" target="_blank" class="bg-brand-500 hover:bg-brand-600 text-stone-950 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-lg shadow-brand-500/10 download-btn">
                 Скачать APK
             </a>
         </div>
@@ -84,7 +85,8 @@
             <div class="order-2 lg:order-1 text-center lg:text-left">
                 
                 <div class="flex flex-col sm:flex-row justify-center lg:justify-start items-center gap-4 mb-6">
-                    <a href="download.php" class="w-full sm:w-auto bg-brand-500 text-stone-950 font-extrabold px-8 py-4 rounded-xl hover:bg-brand-600 transition-all shadow-lg shadow-brand-500/15 text-center">
+                    <!-- ССЫЛКА НА ПРЯМОЕ СКАЧИВАНИЕ -->
+                    <a href="https://kotikapi.onrender.com/Kot-vps.apk" target="_blank" class="w-full sm:w-auto bg-brand-500 text-stone-950 font-extrabold px-8 py-4 rounded-xl hover:bg-brand-600 transition-all shadow-lg shadow-brand-500/15 text-center download-btn">
                         Скачать APK
                     </a>
                 </div>
@@ -211,7 +213,7 @@
                     <li>✅ 1 устройство</li>
                     <li>✅ 5 стран</li>
                 </ul>
-                <a href="download.php" class="block w-full py-3 bg-stone-800 text-white font-bold rounded-xl hover:bg-stone-700 transition-colors text-center">Попробовать</a>
+                <a href="https://kotikapi.onrender.com/Kot-vps.apk" target="_blank" class="block w-full py-3 bg-stone-800 text-white font-bold rounded-xl hover:bg-stone-700 transition-colors text-center download-btn">Попробовать</a>
             </div>
             <div class="p-8 bg-gradient-to-b from-stone-800 to-stone-900 border-2 border-brand-500 rounded-3xl text-center relative">
                 <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-500 text-stone-950 text-xs font-bold px-4 py-1 rounded-full">🔥 Топ</div>
@@ -222,7 +224,7 @@
                     <li>✅ 7 устройств</li>
                     <li>✅ 22+ страны</li>
                 </ul>
-                <a href="download.php" class="block w-full py-3 bg-brand-500 text-stone-950 font-bold rounded-xl hover:bg-brand-600 transition-colors text-center">Подключить</a>
+                <a href="https://kotikapi.onrender.com/Kot-vps.apk" target="_blank" class="block w-full py-3 bg-brand-500 text-stone-950 font-bold rounded-xl hover:bg-brand-600 transition-colors text-center download-btn">Подключить</a>
             </div>
             <div class="p-8 bg-stone-900/60 border border-stone-800/80 rounded-3xl text-center">
                 <h3 class="text-xl font-bold text-white mb-2">Год</h3>
@@ -233,7 +235,7 @@
                     <li>✅ 22+ страны</li>
                     <li>✅ Экономия 40%</li>
                 </ul>
-                <a href="download.php" class="block w-full py-3 bg-stone-800 text-white font-bold rounded-xl hover:bg-stone-700 transition-colors text-center">Выбрать</a>
+                <a href="https://kotikapi.onrender.com/Kot-vps.apk" target="_blank" class="block w-full py-3 bg-stone-800 text-white font-bold rounded-xl hover:bg-stone-700 transition-colors text-center download-btn">Выбрать</a>
             </div>
         </div>
     </section>
@@ -287,7 +289,7 @@
                     <span class="bg-[#2a2a35] border border-white/5 px-2 py-1 rounded-md text-[10px] text-gray-300">🔒 Без логов</span>
                     <span class="bg-[#2a2a35] border border-white/5 px-2 py-1 rounded-md text-[10px] text-gray-300">📱 Все устройства</span>
                 </div>
-                <a href="download.php" class="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-500/20 transition-all flex items-center justify-center gap-2">
+                <a href="https://kotikapi.onrender.com/Kot-vps.apk" target="_blank" class="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-500/20 transition-all flex items-center justify-center gap-2 download-btn">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     Забрать VPN бесплатно
                 </a>
@@ -313,6 +315,25 @@
             </div>
         </div>
     </footer>
+
+    <!-- СКРИПТ ДЛЯ ПОДСЧЁТА СКАЧИВАНИЙ -->
+    <script>
+        // Функция отправки сигнала на сервер для увеличения счётчика
+        function trackDownload() {
+            fetch('https://kotikapi.onrender.com/upload-apk', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'download' })
+            }).catch(err => console.log('Ошибка счётчика:', err));
+        }
+
+        // Навешиваем обработчик клика на все кнопки с классом download-btn
+        document.querySelectorAll('.download-btn').forEach(link => {
+            link.addEventListener('click', function() {
+                trackDownload();
+            });
+        });
+    </script>
 
     <script>
         function openModal() {
